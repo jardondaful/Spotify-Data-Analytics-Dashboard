@@ -1,4 +1,4 @@
-# Spotify Analysis Project
+# Spotify Data Analytics Dashboard
 
 This project is a web application that provides users with insights into their Spotify listening habits. It uses the Spotify API to fetch user data and presents it in an easy-to-understand format.
 
