@@ -3,32 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spotify Data Analysis</title>
+    <title>Current Season Summary</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <header>
-        <h1>Your Spotify Insights</h1>
+        <h1>Your Spotify Summary</h1>
     </header>
     
     <main>
-        <section class="listening-stats">
-            <h2>Listening Stats</h2>
-            <div class="stat-cards">
-                <div class="stat-card">
-                    <h3>Total Listening Time</h3>
-                    <p>{{ analytics.total_listen_time_hours }} hours</p>
-                </div>
-                <div class="stat-card">
-                    <h3>Average Track Duration</h3>
-                    <p>{{ analytics.avg_track_duration_min }} minutes</p>
-                </div>
-            </div>
-        </section>
-
         <section class="top-artists">
-            <h2>Your Top Artists</h2>
+            <h2>Your Top Artists Within the Past Six Months</h2>
             <div class="artist-cards">
                 {% for artist in analytics.top_artists %}
                 <div class="artist-card">
@@ -41,67 +26,29 @@
             </div>
         </section>
 
-        <section class="recent-tracks">
-            <h2>Recently Played Tracks</h2>
+        <section class="top-tracks">
+            <h2>Your Top Tracks Within the Past 90 Days</h2>
             <table>
                 <thead>
                     <tr>
                         <th>Track</th>
                         <th>Artist</th>
                         <th>Album</th>
-                        <th>Played At</th>
+                        <th>Popularity</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for track in analytics.recent_tracks[:10] %}
+                    {% for track in analytics.top_tracks %}
                     <tr>
                         <td>{{ track.name }}</td>
                         <td>{{ track.artist }}</td>
                         <td>{{ track.album }}</td>
-                        <td>{{ track.played_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ track.popularity }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </section>
-
-        <section class="audio-features">
-            <h2>Your Music Preferences</h2>
-            <canvas id="audioFeaturesChart"></canvas>
-        </section>
     </main>
-
-    <script>
-        // Audio Features Chart
-        var ctx = document.getElementById('audioFeaturesChart').getContext('2d');
-        var audioFeaturesChart = new Chart(ctx, {
-            type: 'radar',
-            data: {
-                labels: ['Danceability', 'Energy', 'Valence'],
-                datasets: [{
-                    label: 'Your Music Preferences',
-                    data: [
-                        {{ analytics.avg_audio_features.danceability }},
-                        {{ analytics.avg_audio_features.energy }},
-                        {{ analytics.avg_audio_features.valence }}
-                    ],
-                    backgroundColor: 'rgba(29, 185, 84, 0.2)',
-                    borderColor: 'rgb(29, 185, 84)',
-                    pointBackgroundColor: 'rgb(29, 185, 84)',
-                    pointBorderColor: '#fff',
-                    pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: 'rgb(29, 185, 84)'
-                }]
-            },
-            options: {
-                scale: {
-                    ticks: {
-                        beginAtZero: true,
-                        max: 1
-                    }
-                }
-            }
-        });
-    </script>
 </body>
 </html>
