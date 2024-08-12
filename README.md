@@ -1,7 +1,4 @@
-Here’s a README file that explains how to set up and run the Flask application you provided, including the use of the uploaded image as a visual reference.
-
-```markdown
-# Spotify Season Summary Web App
+# Spotify Data Analytics Dashboard
 
 <img width="789" alt="Screen Shot 2024-08-12 at 12 38 59 AM" src="https://github.com/user-attachments/assets/37b686fb-183a-4030-b904-8db92f3ccc7d">
 
@@ -55,7 +52,7 @@ This web application allows you to visualize your top Spotify artists, tracks, a
 
 ## Screenshot
 
-![App Interface](<img width="789" alt="Screen Shot 2024-08-12 at 12 38 59 AM" src="https://github.com/user-attachments/assets/37b686fb-183a-4030-b904-8db92f3ccc7d">)
+![App Interface](https://github.com/user-attachments/assets/37b686fb-183a-4030-b904-8db92f3ccc7d)
 
 ## How It Works
 
@@ -78,6 +75,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Flask](https://flask.palletsprojects.com/)
 - [Spotipy](https://spotipy.readthedocs.io/)
 - [Spotify API](https://developer.spotify.com/documentation/web-api/)
-```
-
-This README includes instructions on how to set up and run the Flask application, along with a visual reference to what the app looks like using the provided screenshot.
