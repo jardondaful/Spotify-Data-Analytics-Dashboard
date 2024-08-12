@@ -3,9 +3,7 @@ from flask import Flask, request, redirect, session, render_template
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import time
-import datetime
-import numpy as np
-from collections import Counter
+from collections import Counter, defaultdict
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'  # Replace this with a real secret key
@@ -29,74 +27,99 @@ def callback():
     code = request.args.get('code')
     token_info = sp_oauth.get_access_token(code)
     session["token_info"] = token_info
-    return redirect("/analyze")
+    return redirect("/season-summary")
 
-@app.route('/analyze')
-def analyze():
+@app.route('/season-summary')
+def season_summary():
     session['token_info'], authorized = get_token()
     session.modified = True
     if not authorized:
         return redirect('/')
+    
     sp = spotipy.Spotify(auth=session.get('token_info').get('access_token'))
     
-    # Get user's top artists
-    top_artists = sp.current_user_top_artists(limit=5, time_range='medium_term')
+    # Get user's top artists and tracks for medium term (approx. 6 months)
+    top_artists = sp.current_user_top_artists(limit=10, time_range='medium_term')
+    top_tracks = sp.current_user_top_tracks(limit=10, time_range='medium_term')
     
-    # Get user's recently played tracks
-    recent_tracks = sp.current_user_recently_played(limit=50)
+    # Get all user's recently played tracks (limited to last 90 days)
+    recent_tracks = get_all_recently_played_tracks(sp)
     
-    # Analyze the data
-    analytics = analyze_data(sp, top_artists, recent_tracks)
+    # Combine and analyze data
+    analytics = analyze_seasonal_data(top_artists, top_tracks, recent_tracks)
     
     return render_template('index.html', analytics=analytics)
 
-def analyze_data(sp, top_artists, recent_tracks):
-    # Analyze top artists
+def get_all_recently_played_tracks(sp, limit=50):
+    all_tracks = []
+    last_timestamp = None
+
+    while True:
+        if last_timestamp:
+            recent_tracks = sp.current_user_recently_played(limit=limit, after=last_timestamp)
+        else:
+            recent_tracks = sp.current_user_recently_played(limit=limit)
+
+        all_tracks.extend(recent_tracks['items'])
+
+        # Break if fewer tracks are returned than the limit, indicating no more tracks
+        if len(recent_tracks['items']) < limit:
+            break
+
+        # Set the last timestamp to the played_at time of the last track in the current batch
+        last_timestamp = recent_tracks['items'][-1]['played_at']
+
+    return all_tracks
+
+def analyze_seasonal_data(top_artists, top_tracks, recent_tracks):
+    # Analyze top artists and top tracks
     artist_data = []
+    track_data = []
+    artist_stream_count = Counter()
+    artist_top_track = defaultdict(lambda: {'name': '', 'popularity': 0})
+
+    # Count streams and find most popular track per artist in recent tracks
+    for item in recent_tracks:
+        track = item['track']
+        artist_names = [artist['name'] for artist in track['artists']]
+        
+        for artist_name in artist_names:
+            artist_stream_count[artist_name] += 1
+            if track['popularity'] > artist_top_track[artist_name]['popularity']:
+                artist_top_track[artist_name] = {'name': track['name'], 'popularity': track['popularity']}
+    
+    # Prepare artist data with the number of streams and most popular track
     for artist in top_artists['items']:
+        artist_name = artist['name']
         artist_info = {
-            'name': artist['name'],
+            'name': artist_name,
             'popularity': artist['popularity'],
             'genres': artist['genres'],
-            'image_url': artist['images'][0]['url'] if artist['images'] else None
+            'image_url': artist['images'][0]['url'] if artist['images'] else None,
+            'streams': artist_stream_count.get(artist_name, 0),
+            'most_popular_track': artist_top_track[artist_name]['name']
         }
         artist_data.append(artist_info)
     
-    # Analyze recent tracks
-    track_data = []
-    total_listen_time_ms = 0
-    for item in recent_tracks['items']:
-        track = item['track']
-        played_at = datetime.datetime.strptime(item['played_at'], "%Y-%m-%dT%H:%M:%S.%fZ")
+    # Rank artists by stream count
+    artist_data.sort(key=lambda x: x['streams'], reverse=True)
+    
+    # Prepare top track data and rank by popularity
+    for track in top_tracks['items']:
         track_info = {
             'name': track['name'],
             'artist': track['artists'][0]['name'],
             'album': track['album']['name'],
-            'duration_ms': track['duration_ms'],
-            'played_at': played_at
+            'popularity': track['popularity'],
         }
         track_data.append(track_info)
-        total_listen_time_ms += track['duration_ms']
     
-    # Calculate listening stats
-    total_listen_time_hours = total_listen_time_ms / (1000 * 60 * 60)
-    avg_track_duration_min = np.mean([track['duration_ms'] for track in track_data]) / (1000 * 60)
-    
-    # Get user's audio features preferences
-    track_ids = [item['track']['id'] for item in recent_tracks['items']]
-    audio_features = sp.audio_features(track_ids)
-    avg_audio_features = {
-        'danceability': np.mean([feat['danceability'] for feat in audio_features if feat]),
-        'energy': np.mean([feat['energy'] for feat in audio_features if feat]),
-        'valence': np.mean([feat['valence'] for feat in audio_features if feat])
-    }
+    # Rank tracks by popularity
+    track_data.sort(key=lambda x: x['popularity'], reverse=True)
     
     return {
         'top_artists': artist_data,
-        'recent_tracks': track_data,
-        'total_listen_time_hours': round(total_listen_time_hours, 2),
-        'avg_track_duration_min': round(avg_track_duration_min, 2),
-        'avg_audio_features': avg_audio_features
+        'top_tracks': track_data,  # Ensure top tracks are included in the output
     }
 
 def create_spotify_oauth():
