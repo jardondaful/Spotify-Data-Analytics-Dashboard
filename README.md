@@ -1,15 +1,16 @@
 # Spotify Data Analytics Dashboard
 
-<img width="789" alt="Screen Shot 2024-08-12 at 12 38 59 AM" src="https://github.com/user-attachments/assets/37b686fb-183a-4030-b904-8db92f3ccc7d">
-<img width="705" alt="Screen Shot 2024-08-12 at 11 03 32 PM" src="https://github.com/user-attachments/assets/f7825ce5-7893-44c1-8dda-f09f3e3004b3">
+<img width="1171" alt="Spotify Dashboard Overview" src="https://github.com/user-attachments/assets/34aa7362-55cd-4864-96c5-82009dd85338">
 
-This web application allows you to visualize your top Spotify artists, tracks, and recently played tracks over the past 6 months in addition to reccommend you new songs and automatically create new playlists based on your activity. It leverages the Spotify API to gather data, which is then presented in a user-friendly web interface.
+This web application allows you to visualize your top Spotify artists, tracks, and recently played tracks over the past 6 months in addition to recommending you new songs and automatically creating new playlists based on your activity. It leverages the Spotify API to gather data, which is then presented in a user-friendly web interface.
 
 ## Features
 
 - **Top Artists**: Displays your top 10 artists over the past 6 months, including their popularity and genres.
 - **Top Tracks**: Lists your top 10 tracks over the past 6 months, including track popularity and album name.
 - **Recently Played Tracks**: Retrieves all your recently played tracks (up to the last 90 days) and analyzes them to provide insights.
+- **Song Recommendations**: Recommends new songs based on your listening history.
+- **Automatic Playlist Creation**: Creates new playlists based on your top tracks and recommendations.
 
 ## Prerequisites
 
@@ -51,16 +52,20 @@ This web application allows you to visualize your top Spotify artists, tracks, a
 - **templates/index.html**: The HTML template for rendering the user's Spotify data.
 - **static/styles.css**: The stylesheet to style the application interface.
 
-## Screenshot
+## Screenshots
 
-![App Interface](https://github.com/user-attachments/assets/37b686fb-183a-4030-b904-8db92f3ccc7d)
+<img width="1171" alt="Spotify Dashboard Overview" src="https://github.com/user-attachments/assets/34aa7362-55cd-4864-96c5-82009dd85338">
+
+<img width="705" alt="Spotify Top Tracks" src="https://github.com/user-attachments/assets/f7825ce5-7893-44c1-8dda-f09f3e3004b3">
 
 ## How It Works
 
 1. **Authentication**: Users are authenticated with Spotify using OAuth2.0.
 2. **Data Retrieval**: The app retrieves the user's top artists, top tracks, and recently played tracks (up to the last 90 days).
 3. **Data Analysis**: The app analyzes the retrieved data to determine the most popular tracks and artists based on stream counts and popularity.
-4. **Visualization**: The analyzed data is presented to the user in a clean and organized web interface.
+4. **Recommendations**: The app generates song recommendations based on the user's top tracks.
+5. **Playlist Creation**: A new playlist is created with the user's top tracks and recommended songs.
+6. **Visualization**: The analyzed data is presented to the user in a clean and organized web interface.
 
 ## Customization
 
