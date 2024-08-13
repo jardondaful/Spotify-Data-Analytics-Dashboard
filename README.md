@@ -1,4 +1,4 @@
-# Spotify Data Analytics Dashboard
+# Spotify User Dashboard
 
 <img width="1171" alt="Spotify Dashboard Overview" src="https://github.com/user-attachments/assets/34aa7362-55cd-4864-96c5-82009dd85338">
 
