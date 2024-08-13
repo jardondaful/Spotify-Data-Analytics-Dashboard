@@ -54,7 +54,8 @@ This web application allows you to visualize your top Spotify artists, tracks, a
 
 ## Screenshots
 
-<img width="1171" alt="Spotify Dashboard Overview" src="https://github.com/user-attachments/assets/34aa7362-55cd-4864-96c5-82009dd85338">
+<img width="1185" alt="Screen Shot 2024-08-12 at 11 07 14 PM" src="https://github.com/user-attachments/assets/34f3354d-51e6-44df-9922-825859a7bb81">
+
 
 <img width="705" alt="Spotify Top Tracks" src="https://github.com/user-attachments/assets/f7825ce5-7893-44c1-8dda-f09f3e3004b3">
 
