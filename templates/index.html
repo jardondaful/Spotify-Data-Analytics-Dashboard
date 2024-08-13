@@ -49,6 +49,37 @@
                 </tbody>
             </table>
         </section>
+
+        <section class="recommended-tracks">
+            <h2>Recommended Tracks Based on Your Top 5</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Track</th>
+                        <th>Artist</th>
+                        <th>Album</th>
+                        <th>Popularity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for track in analytics.recommended_tracks %}
+                    <tr>
+                        <td>{{ track.name }}</td>
+                        <td>{{ track.artist }}</td>
+                        <td>{{ track.album }}</td>
+                        <td>{{ track.popularity }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+
+        <section class="created-playlist">
+            <h2>Your Custom Playlist</h2>
+            <p>We've created a playlist with your top 5 tracks and 5 recommended tracks based on them.</p>
+            <p>Playlist Name: {{ analytics.playlist.name }}</p>
+            <a href="{{ analytics.playlist.url }}" target="_blank">Open in Spotify</a>
+        </section>
     </main>
 </body>
 </html>
