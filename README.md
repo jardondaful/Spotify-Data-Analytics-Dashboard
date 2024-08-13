@@ -57,7 +57,7 @@ This web application allows you to visualize your top Spotify artists, tracks, a
 <img width="1185" alt="Screen Shot 2024-08-12 at 11 07 14 PM" src="https://github.com/user-attachments/assets/34f3354d-51e6-44df-9922-825859a7bb81">
 
 
-<img width="705" alt="Spotify Top Tracks" src="https://github.com/user-attachments/assets/f7825ce5-7893-44c1-8dda-f09f3e3004b3">
+<img width="1047" alt="Screen Shot 2024-08-12 at 11 09 09 PM" src="https://github.com/user-attachments/assets/e5676ccb-0743-46f7-b920-a93dba4f3976">
 
 ## How It Works
 
