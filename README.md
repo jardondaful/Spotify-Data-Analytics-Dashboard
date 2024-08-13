@@ -1,8 +1,9 @@
 # Spotify Data Analytics Dashboard
 
 <img width="789" alt="Screen Shot 2024-08-12 at 12 38 59 AM" src="https://github.com/user-attachments/assets/37b686fb-183a-4030-b904-8db92f3ccc7d">
+<img width="705" alt="Screen Shot 2024-08-12 at 11 03 32 PM" src="https://github.com/user-attachments/assets/f7825ce5-7893-44c1-8dda-f09f3e3004b3">
 
-This web application allows you to visualize your top Spotify artists, tracks, and recently played tracks over the past 6 months. It leverages the Spotify API to gather data, which is then presented in a user-friendly web interface.
+This web application allows you to visualize your top Spotify artists, tracks, and recently played tracks over the past 6 months in addition to reccommend you new songs and automatically create new playlists based on your activity. It leverages the Spotify API to gather data, which is then presented in a user-friendly web interface.
 
 ## Features
 
