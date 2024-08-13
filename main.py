@@ -12,7 +12,7 @@ app.config['SESSION_COOKIE_NAME'] = 'spotify-login-session'
 SPOTIPY_CLIENT_ID = ''
 SPOTIPY_CLIENT_SECRET = ''
 SPOTIPY_REDIRECT_URI = 'http://localhost:8000/callback'
-SCOPE = 'user-top-read user-read-recently-played'
+SCOPE = 'user-top-read user-read-recently-played playlist-modify-private'
 
 @app.route('/')
 def index():
@@ -45,8 +45,15 @@ def season_summary():
     # Get all user's recently played tracks (limited to last 90 days)
     recent_tracks = get_all_recently_played_tracks(sp)
     
+    # Get recommendations based on top 5 tracks
+    top_5_track_ids = [track['id'] for track in top_tracks['items'][:5]]
+    recommendations = sp.recommendations(seed_tracks=top_5_track_ids, limit=5)
+    
+    # Create a playlist with top 5 tracks and 5 recommendations
+    playlist = create_playlist(sp, top_5_track_ids, [track['id'] for track in recommendations['tracks']])
+    
     # Combine and analyze data
-    analytics = analyze_seasonal_data(top_artists, top_tracks, recent_tracks)
+    analytics = analyze_seasonal_data(top_artists, top_tracks, recent_tracks, recommendations, playlist)
     
     return render_template('index.html', analytics=analytics)
 
@@ -71,7 +78,7 @@ def get_all_recently_played_tracks(sp, limit=50):
 
     return all_tracks
 
-def analyze_seasonal_data(top_artists, top_tracks, recent_tracks):
+def analyze_seasonal_data(top_artists, top_tracks, recent_tracks, recommendations, playlist):
     # Analyze top artists and top tracks
     artist_data = []
     track_data = []
@@ -117,9 +124,33 @@ def analyze_seasonal_data(top_artists, top_tracks, recent_tracks):
     # Rank tracks by popularity
     track_data.sort(key=lambda x: x['popularity'], reverse=True)
     
+    recommended_tracks = []
+    for track in recommendations['tracks']:
+        track_info = {
+            'name': track['name'],
+            'artist': track['artists'][0]['name'],
+            'album': track['album']['name'],
+            'popularity': track['popularity'],
+        }
+        recommended_tracks.append(track_info)
+    
     return {
         'top_artists': artist_data,
-        'top_tracks': track_data,  # Ensure top tracks are included in the output
+        'top_tracks': track_data,
+        'recommended_tracks': recommended_tracks,
+        'playlist': playlist,
+    }
+
+def create_playlist(sp, top_track_ids, recommended_track_ids):
+    user_id = sp.me()['id']
+    playlist = sp.user_playlist_create(user_id, "Your Top Tracks + Recommendations", public=False)
+    
+    tracks_to_add = top_track_ids + recommended_track_ids
+    sp.user_playlist_add_tracks(user_id, playlist['id'], tracks_to_add)
+    
+    return {
+        'name': playlist['name'],
+        'url': playlist['external_urls']['spotify'],
     }
 
 def create_spotify_oauth():
