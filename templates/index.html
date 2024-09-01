@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Current Season Summary</title>
+    <title>Your Spotify Summary</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
@@ -13,7 +13,7 @@
     
     <main>
         <section class="top-artists">
-            <h2>Your Top Artists Within the Past Six Months</h2>
+            <h2>Your Top Artists (Past 6 Months)</h2>
             <div class="artist-cards">
                 {% for artist in analytics.top_artists %}
                 <div class="artist-card">
@@ -21,13 +21,59 @@
                     <h3>{{ artist.name }}</h3>
                     <p>Popularity: {{ artist.popularity }}</p>
                     <p>Genres: {{ ', '.join(artist.genres[:3]) }}</p>
+                    <p>Most Played: {{ artist.most_popular_track or 'Not available' }}</p>
+                    <p>Times Played: {{ artist.streams }}</p>
                 </div>
                 {% endfor %}
             </div>
         </section>
 
+        <section class="listening-patterns">
+            <h2>Your Listening Patterns</h2>
+            <img src="data:image/png;base64,{{ analytics.listening_time_plot }}" alt="Listening Patterns Chart">
+        </section>
+
+        <section class="listening-trends">
+            <h2>Your Listening Trends</h2>
+            <div class="trend-cards">
+                <div class="trend-card">
+                    <h3>Top Genres</h3>
+                    <ul>
+                        {% for genre, count in analytics.listening_trends.top_genres.items() %}
+                            <li>{{ genre }}: {{ count }} plays</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="trend-card">
+                    <h3>Emerging Genres</h3>
+                    <ul>
+                        {% for genre in analytics.listening_trends.emerging_genres %}
+                            <li>{{ genre }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="trend-card">
+                    <h3>Music Mood Trends</h3>
+                    <ul>
+                        {% for feature, trend in analytics.listening_trends.feature_trends.items() %}
+                            <li>{{ feature|capitalize }}: {{ "Increasing" if trend > 0 else "Decreasing" }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <div class="recommendations">
+                <h3>Personalized Recommendations</h3>
+                <ul>
+                    {% for recommendation in analytics.listening_trends.recommendations %}
+                        <li>{{ recommendation }}</li>
+                    {% endfor %}
+                </ul>
+                <p>{{ analytics.listening_trends.potential_new_favorite }}</p>
+            </div>
+        </section>
+
         <section class="top-tracks">
-            <h2>Your Top Tracks Within the Past 90 Days</h2>
+            <h2>Your Top Tracks (Past 90 Days)</h2>
             <table>
                 <thead>
                     <tr>
@@ -50,8 +96,9 @@
             </table>
         </section>
 
-        <section class="recommended-tracks">
-            <h2>Recommended Tracks Based on Your Top 5</h2>
+        <section class="recommendations">
+            <h2>Recommended Tracks</h2>
+            <p>Based on your top 5 tracks, we think you might like:</p>
             <table>
                 <thead>
                     <tr>
@@ -74,12 +121,18 @@
             </table>
         </section>
 
-        <section class="created-playlist">
+        <section class="custom-playlist">
             <h2>Your Custom Playlist</h2>
-            <p>We've created a playlist with your top 5 tracks and 5 recommended tracks based on them.</p>
-            <p>Playlist Name: {{ analytics.playlist.name }}</p>
-            <a href="{{ analytics.playlist.url }}" target="_blank">Open in Spotify</a>
+            <p>We've created a playlist with your top 5 tracks and 5 recommended tracks.</p>
+            <div class="playlist-info">
+                <p><strong>Playlist Name:</strong> {{ analytics.playlist.name }}</p>
+                <a href="{{ analytics.playlist.url }}" target="_blank" class="spotify-button">Open in Spotify</a>
+            </div>
         </section>
     </main>
+
+    <footer>
+        <p>Data provided by Spotify. Last updated: {{ analytics.last_updated|default('N/A', true) }}</p>
+    </footer>
 </body>
 </html>
