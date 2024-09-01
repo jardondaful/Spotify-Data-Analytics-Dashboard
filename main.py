@@ -41,6 +41,7 @@ def callback():
     return redirect("/season-summary")
 
 @app.route('/season-summary')
+@app.route('/season-summary')
 def season_summary():
     session['token_info'], authorized = get_token()
     session.modified = True
@@ -64,7 +65,7 @@ def season_summary():
     playlist = create_playlist(sp, top_5_track_ids, [track['id'] for track in recommendations['tracks']])
     
     # Analyze listening habits over time
-    listening_time_plot = analyze_listening_habits(recent_tracks)
+    listening_time_plot, date_range_data = analyze_listening_habits(recent_tracks)
     
     # Analyze listening trends
     listening_trends = analyze_listening_trends(sp, recent_tracks, top_artists)
@@ -73,8 +74,10 @@ def season_summary():
     analytics = analyze_seasonal_data(top_artists, top_tracks, recent_tracks, recommendations, playlist)
     analytics['listening_time_plot'] = listening_time_plot  # Add the listening habits plot
     analytics['listening_trends'] = listening_trends  # Add the listening trends analysis
+    analytics['date_range_data'] = date_range_data or []  # Ensure date_range_data is a list
     
     return render_template('index.html', analytics=analytics)
+
 
 def get_all_recently_played_tracks(sp, limit=50):
     all_tracks = []
@@ -168,65 +171,37 @@ def analyze_listening_habits(recent_tracks):
     timestamps = [track['played_at'] for track in recent_tracks]
     track_names = [track['track']['name'] for track in recent_tracks]
     
-    # Convert to datetime using ISO8601 format
-    timestamps = pd.to_datetime(timestamps, format='ISO8601', utc=True)
+    # Convert to datetime using a more flexible approach
+    timestamps = pd.to_datetime(timestamps, format='mixed', utc=True)
 
     # Create dataframe with timestamps and track names
     df = pd.DataFrame({'timestamp': timestamps, 'track': track_names})
 
-    # Extract hour
+    # Extract date and hour
+    df['date'] = df['timestamp'].dt.date
     df['hour'] = df['timestamp'].dt.hour
 
-    # Count tracks and identify loops
-    track_counts = df.groupby(['hour', 'track']).size().reset_index(name='count')
-    loops = track_counts[track_counts['count'] > 1]
-
-    # Aggregate by hour
+    # Count tracks by hour of the day
     hourly_counts = df.groupby('hour').size().reset_index(name='count')
-    
+
     # Set the style
     plt.style.use('dark_background')
     
-    # Create a new figure with a specific size and facecolor
-    fig, ax = plt.subplots(figsize=(15, 8), facecolor='#121212')
+    # Create a new figure for the hourly listening habits
+    fig, ax = plt.subplots(figsize=(12, 6), facecolor='#121212')
     
-    # Plot: Listening by Hour of the Day
-    hours = np.arange(24)
-    counts = hourly_counts.set_index('hour').reindex(hours).fillna(0)['count']
-    ax.plot(hours, counts, color='#1DB954', linewidth=2, marker='o', markersize=6)
-    
-    # Fill area under the line
-    ax.fill_between(hours, counts, color='#1DB954', alpha=0.2)
+    # Plot: Hourly Listening Habits (line chart)
+    ax.plot(hourly_counts['hour'], hourly_counts['count'], color='#1DB954', linewidth=2, marker='o', markersize=6)
+    ax.fill_between(hourly_counts['hour'], hourly_counts['count'], color='#1DB954', alpha=0.2)
 
     # Customize the plot
     ax.set_facecolor('#181818')
     ax.set_xlabel('Hour of the Day', fontsize=12, color='#FFFFFF')
     ax.set_ylabel('Number of Tracks Played', fontsize=12, color='#FFFFFF')
-    ax.set_title('Listening Habits Throughout the Day', fontsize=16, color='#1DB954')
-    
-    # Set x-axis ticks to show all 24 hours
-    ax.set_xticks(hours)
-    ax.set_xticklabels([f"{h:02d}:00" for h in hours], rotation=45, ha='right')
-    
-    # Remove spines
-    for spine in ax.spines.values():
-        spine.set_visible(False)
-    
-    # Customize the ticks
-    ax.tick_params(colors='#FFFFFF', which='both', left=False, bottom=False)
-    
-    # Add loop information
-    if not loops.empty:
-        loop_text = "Loops detected:\n" + "\n".join(f"{row['track']} ({row['count']} times)" for _, row in loops.iterrows())
-        ax.text(1.05, 0.95, loop_text, transform=ax.transAxes, fontsize=10, verticalalignment='top', color='#1DB954')
-
-    # Add a subtle grid
-    ax.grid(color='#282828', linestyle='--', linewidth=0.5, alpha=0.3)
-
-    # Highlight AM/PM
-    ax.axvspan(0, 12, alpha=0.1, color='#FFFFFF', label='AM')
-    ax.axvspan(12, 24, alpha=0.2, color='#FFFFFF', label='PM')
-    ax.legend(loc='upper left', facecolor='#181818', edgecolor='none', labelcolor='#FFFFFF')
+    ax.set_title('Hourly Listening Habits of the Day', fontsize=16, color='#1DB954')
+    ax.set_xticks(range(24))
+    ax.set_xticklabels([f"{h:02d}:00" for h in range(24)], rotation=45, ha='right')
+    ax.tick_params(colors='#FFFFFF')
 
     # Adjust layout and save
     plt.tight_layout()
@@ -238,7 +213,15 @@ def analyze_listening_habits(recent_tracks):
     img_str = base64.b64encode(buf.read()).decode("utf-8")
     buf.close()
     
-    return img_str
+    # Prepare data for interactive chart
+    date_range_data = df.groupby(['date', 'hour']).size().reset_index(name='count')
+    date_range_data['date'] = date_range_data['date'].astype(str)
+    date_range_data = date_range_data.to_dict(orient='records')
+    
+    return img_str, date_range_data
+
+
+
 
 def analyze_listening_trends(sp, recent_tracks, top_artists):
     # Extract genres from top artists

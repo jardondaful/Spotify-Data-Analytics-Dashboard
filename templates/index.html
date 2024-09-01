@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Spotify Summary</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <header>
@@ -12,8 +13,9 @@
     </header>
     
     <main>
-        <section class="top-artists">
-            <h2>Your Top Artists (Past 6 Months)</h2>
+
+        <section class="section" id="top-artists">
+            <h2>Your Top Ten Artists</h2>
             <div class="artist-cards">
                 {% for artist in analytics.top_artists %}
                 <div class="artist-card">
@@ -21,60 +23,23 @@
                     <h3>{{ artist.name }}</h3>
                     <p>Popularity: {{ artist.popularity }}</p>
                     <p>Genres: {{ ', '.join(artist.genres[:3]) }}</p>
-                    <p>Most Played: {{ artist.most_popular_track or 'Not available' }}</p>
+                    <p>Most Played: {{ artist.most_popular_track }}</p>
                     <p>Times Played: {{ artist.streams }}</p>
                 </div>
                 {% endfor %}
             </div>
         </section>
 
-        <section class="listening-patterns">
+        <section class="section" id="listening-patterns">
             <h2>Your Listening Patterns</h2>
-            <img src="data:image/png;base64,{{ analytics.listening_time_plot }}" alt="Listening Patterns Chart">
+            <img src="data:image/png;base64,{{ analytics.listening_time_plot }}" alt="Overall Listening Patterns" style="max-width:100%; height:auto;">
+            
+
         </section>
 
-        <section class="listening-trends">
-            <h2>Your Listening Trends</h2>
-            <div class="trend-cards">
-                <div class="trend-card">
-                    <h3>Top Genres</h3>
-                    <ul>
-                        {% for genre, count in analytics.listening_trends.top_genres.items() %}
-                            <li>{{ genre }}: {{ count }} plays</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                <div class="trend-card">
-                    <h3>Emerging Genres</h3>
-                    <ul>
-                        {% for genre in analytics.listening_trends.emerging_genres %}
-                            <li>{{ genre }}</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                <div class="trend-card">
-                    <h3>Music Mood Trends</h3>
-                    <ul>
-                        {% for feature, trend in analytics.listening_trends.feature_trends.items() %}
-                            <li>{{ feature|capitalize }}: {{ "Increasing" if trend > 0 else "Decreasing" }}</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
-            <div class="recommendations">
-                <h3>Personalized Recommendations</h3>
-                <ul>
-                    {% for recommendation in analytics.listening_trends.recommendations %}
-                        <li>{{ recommendation }}</li>
-                    {% endfor %}
-                </ul>
-                <p>{{ analytics.listening_trends.potential_new_favorite }}</p>
-            </div>
-        </section>
-
-        <section class="top-tracks">
-            <h2>Your Top Tracks (Past 90 Days)</h2>
-            <table>
+        <section class="section" id="top-tracks">
+            <h2>Your Top Tracks</h2>
+            <table class="track-table">
                 <thead>
                     <tr>
                         <th>Track</th>
@@ -96,10 +61,9 @@
             </table>
         </section>
 
-        <section class="recommendations">
+        <section class="section" id="recommended-tracks">
             <h2>Recommended Tracks</h2>
-            <p>Based on your top 5 tracks, we think you might like:</p>
-            <table>
+            <table class="track-table">
                 <thead>
                     <tr>
                         <th>Track</th>
@@ -121,18 +85,149 @@
             </table>
         </section>
 
-        <section class="custom-playlist">
+        <section class="section" id="playlist">
             <h2>Your Custom Playlist</h2>
-            <p>We've created a playlist with your top 5 tracks and 5 recommended tracks.</p>
-            <div class="playlist-info">
-                <p><strong>Playlist Name:</strong> {{ analytics.playlist.name }}</p>
-                <a href="{{ analytics.playlist.url }}" target="_blank" class="spotify-button">Open in Spotify</a>
+            <p>We've created a playlist with your top tracks and recommendations.</p>
+            <p><strong>Playlist Name:</strong> {{ analytics.playlist.name }}</p>
+            <a href="{{ analytics.playlist.url }}" target="_blank" class="spotify-button">Open in Spotify</a>
+        </section>
+
+        <section class="section" id="listening-trends">
+            <h2>Your Listening Trends</h2>
+            <div>
+                <h3>Top Genres</h3>
+                <ul>
+                    {% for genre, count in analytics.listening_trends.top_genres.items() %}
+                        <li>{{ genre }}: {{ count }} plays</li>
+                    {% endfor %}
+                </ul>
             </div>
+            <div>
+                <h3>Emerging Genres</h3>
+                <ul>
+                    {% for genre in analytics.listening_trends.emerging_genres %}
+                        <li>{{ genre }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div>
+                <h3>Music Mood Trends</h3>
+                <ul>
+                    {% for feature, trend in analytics.listening_trends.feature_trends.items() %}
+                        <li>{{ feature|capitalize }}: {{ "Increasing" if trend > 0 else "Decreasing" }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div>
+                <h3>Personalized Recommendations</h3>
+                <ul>
+                    {% for recommendation in analytics.listening_trends.recommendations %}
+                        <li>{{ recommendation }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <p>{{ analytics.listening_trends.potential_new_favorite }}</p>
         </section>
     </main>
 
     <footer>
         <p>Data provided by Spotify. Last updated: {{ analytics.last_updated|default('N/A', true) }}</p>
     </footer>
+
+    <script>
+        const dateRangeData = {{ analytics.date_range_data | tojson | safe }} || [];
+        let chart;
+
+        function createChart(data) {
+            if (data.length === 0) {
+                document.getElementById('dateRangeChart').style.display = 'none';
+                document.getElementById('no-data-message').style.display = 'block';
+                return;
+            } else {
+                document.getElementById('dateRangeChart').style.display = 'block';
+                document.getElementById('no-data-message').style.display = 'none';
+            }
+
+            const ctx = document.getElementById('dateRangeChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 24}, (_, i) => `${i.toString().padStart(2, '0')}:00`),
+                    datasets: [{
+                        label: 'Tracks Played',
+                        data: new Array(24).fill(0),
+                        borderColor: '#1DB954',
+                        backgroundColor: 'rgba(29, 185, 84, 0.2)',
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Tracks Played'
+                            },
+                            ticks: {
+                                color: '#ffffff'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Hour of the Day'
+                            },
+                            ticks: {
+                                color: '#ffffff'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#ffffff'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateChart() {
+            if (dateRangeData.length === 0) return;
+
+            const startDate = new Date(document.getElementById('start-date').value);
+            const endDate = new Date(document.getElementById('end-date').value);
+            
+            const filteredData = dateRangeData.filter(item => {
+                const itemDate = new Date(item.date);
+                return itemDate >= startDate && itemDate <= endDate;
+            });
+
+            const aggregatedData = new Array(24).fill(0);
+            filteredData.forEach(item => {
+                aggregatedData[item.hour] += item.count;
+            });
+
+            chart.data.datasets[0].data = aggregatedData;
+            chart.update();
+        }
+
+        createChart(dateRangeData);
+
+        // Set initial date range
+        if (dateRangeData.length > 0) {
+            const dates = dateRangeData.map(item => new Date(item.date));
+            const minDate = new Date(Math.min.apply(null, dates));
+            const maxDate = new Date(Math.max.apply(null, dates));
+            
+            document.getElementById('start-date').value = minDate.toISOString().split('T')[0];
+            document.getElementById('end-date').value = maxDate.toISOString().split('T')[0];
+            
+            updateChart();
+        }
+    </script>
 </body>
 </html>
