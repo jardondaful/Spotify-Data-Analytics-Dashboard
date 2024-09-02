@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,11 +8,12 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
     <header>
         <h1>Your Spotify Summary</h1>
     </header>
-    
+
     <main>
 
         <section class="section" id="top-artists">
@@ -26,14 +28,16 @@
                     <p>Most Played: {{ artist.most_popular_track }}</p>
                     <p>Times Played: {{ artist.streams }}</p>
                 </div>
+
                 {% endfor %}
             </div>
         </section>
 
         <section class="section" id="listening-patterns">
             <h2>Your Listening Patterns</h2>
-            <img src="data:image/png;base64,{{ analytics.listening_time_plot }}" alt="Overall Listening Patterns" style="max-width:100%; height:auto;">
-            
+            <img src="data:image/png;base64,{{ analytics.listening_time_plot }}" alt="Overall Listening Patterns"
+                style="max-width:100%; height:auto;">
+
 
         </section>
 
@@ -87,46 +91,79 @@
 
         <section class="section" id="playlist">
             <h2>Your Custom Playlist</h2>
-            <p>We've created a playlist with your top tracks and recommendations.</p>
-            <p><strong>Playlist Name:</strong> {{ analytics.playlist.name }}</p>
-            <a href="{{ analytics.playlist.url }}" target="_blank" class="spotify-button">Open in Spotify</a>
+            <div class="playlist-container">
+                <div class="playlist-info">
+                    <p>Create a playlist with your top 20 tracks and 30 recommendations.</p>
+                    <p><strong>Playlist Name:</strong> Your Top 20 + 30 Recommendations</p>
+                    <div class="button-container">
+                        <button id="create-playlist-btn" class="spotify-button">
+                            <span class="button-text">Create Playlist</span>
+                            <span class="spinner"></span>
+                        </button>
+                        <a id="open-playlist-link" href="#" target="_blank" class="spotify-button"
+                            style="display: none;">
+                            Open in Spotify
+                        </a>
+                    </div>
+                    <p id="playlist-status" class="status-message"></p>
+                </div>
+            </div>
         </section>
 
         <section class="section" id="listening-trends">
             <h2>Your Listening Trends</h2>
-            <div>
-                <h3>Top Genres</h3>
-                <ul>
-                    {% for genre, count in analytics.listening_trends.top_genres.items() %}
-                        <li>{{ genre }}: {{ count }} plays</li>
-                    {% endfor %}
-                </ul>
+            <div class="trends-container">
+                <div class="trend-box">
+                    <h3>Top Genres</h3>
+                    <ul class="trend-list">
+                        {% for genre, count in analytics.listening_trends.top_genres.items() %}
+                        <li>
+                            <span class="genre">{{ genre }}</span>
+                            <div class="genre-bar"
+                                style="width: {{ (count / analytics.listening_trends.top_genres.values()|max * 100)|round }}%">
+                            </div>
+                            <span class="count">{{ count }} plays</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="trend-box">
+                    <h3>Emerging Genres</h3>
+                    <ul class="trend-list">
+                        {% for genre in analytics.listening_trends.emerging_genres %}
+                        <li>
+                            <span class="genre">{{ genre }}</span>
+                            <span class="emerging-icon">🚀</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="trend-box">
+                    <h3>Music Mood Trends</h3>
+                    <ul class="trend-list">
+                        {% for feature, trend in analytics.listening_trends.feature_trends.items() %}
+                        <li>
+                            <span class="feature">{{ feature|capitalize }}</span>
+                            <span class="trend {{ 'increasing' if trend > 0 else 'decreasing' }}">
+                                {{ "↗️" if trend > 0 else "↘️" }} {{ "Increasing" if trend > 0 else "Decreasing" }}
+                            </span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="trend-box">
+                    <h3>Personalized Recommendations</h3>
+                    <ul class="trend-list recommendations">
+                        {% for recommendation in analytics.listening_trends.recommendations %}
+                        <li>
+                            <span class="recommendation-icon">💡</span>
+                            {{ recommendation }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
             </div>
-            <div>
-                <h3>Emerging Genres</h3>
-                <ul>
-                    {% for genre in analytics.listening_trends.emerging_genres %}
-                        <li>{{ genre }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-            <div>
-                <h3>Music Mood Trends</h3>
-                <ul>
-                    {% for feature, trend in analytics.listening_trends.feature_trends.items() %}
-                        <li>{{ feature|capitalize }}: {{ "Increasing" if trend > 0 else "Decreasing" }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-            <div>
-                <h3>Personalized Recommendations</h3>
-                <ul>
-                    {% for recommendation in analytics.listening_trends.recommendations %}
-                        <li>{{ recommendation }}</li>
-                    {% endfor %}
-                </ul>
-            </div>
-            <p>{{ analytics.listening_trends.potential_new_favorite }}</p>
+            <p class="potential-favorite">🎵 {{ analytics.listening_trends.potential_new_favorite }}</p>
         </section>
     </main>
 
@@ -152,7 +189,7 @@
             chart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: Array.from({length: 24}, (_, i) => `${i.toString().padStart(2, '0')}:00`),
+                    labels: Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00`),
                     datasets: [{
                         label: 'Tracks Played',
                         data: new Array(24).fill(0),
@@ -200,7 +237,7 @@
 
             const startDate = new Date(document.getElementById('start-date').value);
             const endDate = new Date(document.getElementById('end-date').value);
-            
+
             const filteredData = dateRangeData.filter(item => {
                 const itemDate = new Date(item.date);
                 return itemDate >= startDate && itemDate <= endDate;
@@ -222,12 +259,52 @@
             const dates = dateRangeData.map(item => new Date(item.date));
             const minDate = new Date(Math.min.apply(null, dates));
             const maxDate = new Date(Math.max.apply(null, dates));
-            
+
             document.getElementById('start-date').value = minDate.toISOString().split('T')[0];
             document.getElementById('end-date').value = maxDate.toISOString().split('T')[0];
-            
+
             updateChart();
         }
     </script>
+
+    <script>
+        document.getElementById('create-playlist-btn').addEventListener('click', function () {
+            const button = this;
+            const buttonText = button.querySelector('.button-text');
+            const spinner = button.querySelector('.spinner');
+            const statusMessage = document.getElementById('playlist-status');
+            const openPlaylistLink = document.getElementById('open-playlist-link');
+
+            button.disabled = true;
+            buttonText.textContent = 'Creating...';
+            spinner.style.display = 'inline-block';
+            statusMessage.textContent = '';
+
+            fetch('/create-playlist', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.url) {
+                        statusMessage.textContent = 'Playlist created successfully!';
+                        statusMessage.classList.add('success');
+                        openPlaylistLink.href = data.url;
+                        openPlaylistLink.style.display = 'inline-block';
+                        button.style.display = 'none';
+                    } else {
+                        throw new Error('No playlist URL returned');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    statusMessage.textContent = 'Error creating playlist. Please try again.';
+                    statusMessage.classList.add('error');
+                    buttonText.textContent = 'Create Playlist';
+                })
+                .finally(() => {
+                    button.disabled = false;
+                    spinner.style.display = 'none';
+                });
+        });
+    </script>
 </body>
+
 </html>
