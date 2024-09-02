@@ -48,22 +48,37 @@ header h1 {
     font-size: 1.1em;
 }
 
-.artist-card,
-.track-table,
-.spotify-button {
+/* Top Artists Grid Layout - 4 per row, smaller cards */
+.artist-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
     margin-top: 20px;
 }
 
+.artist-card {
+    background-color: #1e1e1e;
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
 .artist-card img {
-    border-radius: 50%;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    margin-bottom: 15px;
-    max-width: 100%;
+    max-width: 80%;
     height: auto;
+    border-radius: 50%;
+    margin-bottom: 10px;
 }
 
 .artist-card h3 {
-    font-size: 1.2em;
+    font-size: 0.9em;
+    margin-bottom: 5px;
+}
+
+.artist-card p {
+    font-size: 0.8em;
+    color: #CCCCCC;
     margin-bottom: 5px;
 }
 
@@ -141,7 +156,6 @@ header h1 {
     }
 }
 
-
 .status-message {
     margin-top: 15px;
     font-weight: bold;
@@ -198,34 +212,65 @@ footer {
     border-top: 2px solid #1DB954;
 }
 
+/* Custom Playlist Section Improvements */
 .section#playlist {
-    background-color: #1DB954;
-    color: #121212;
+    background-color: #222222; /* Dark gray background to match the theme */
+    color: #FFFFFF; /* White text for contrast */
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    /* Removed max-width to allow full-width alignment */
 }
 
 .section#playlist h2 {
-    color: #121212;
-    border-bottom-color: #121212;
+    color: #1DB954; /* Green color for the heading to maintain brand consistency */
+    border-bottom: 2px solid #1DB954; /* Green border for the heading */
+    margin-bottom: 20px;
+    font-size: 2em;
 }
 
 .section#playlist p {
-    color: #121212;
+    color: #CCCCCC; /* Light gray text for instructions */
     font-size: 1.2em;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
+    text-align: center;
 }
 
 .section#playlist .spotify-button {
-    background-color: #121212;
-    color: #1DB954;
+    background-color: #1DB954; /* Green button background */
+    color: #222222; /* Dark gray text on the button */
     font-weight: bold;
     transition: all 0.3s ease;
+    padding: 15px 30px;
+    border-radius: 25px;
+    font-size: 1.1em;
+    display: block;
+    margin: 0 auto;
 }
 
 .section#playlist .spotify-button:hover {
-    background-color: #FFFFFF;
-    color: #1DB954;
+    background-color: #1ed760; /* Slightly lighter green on hover */
+    color: #121212; /* Darker gray text on hover */
+    transform: translateY(-3px) scale(1.05);
 }
 
+.playlist-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    background-color: #333333; /* Darker gray background for playlist info */
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+/* Listening Trends Section */
 .section#listening-trends {
     display: flex;
     flex-direction: column;

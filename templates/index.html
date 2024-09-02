@@ -28,7 +28,6 @@
                     <p>Most Played: {{ artist.most_popular_track }}</p>
                     <p>Times Played: {{ artist.streams }}</p>
                 </div>
-
                 {% endfor %}
             </div>
         </section>
@@ -37,8 +36,6 @@
             <h2>Your Listening Patterns</h2>
             <img src="data:image/png;base64,{{ analytics.listening_time_plot }}" alt="Overall Listening Patterns"
                 style="max-width:100%; height:auto;">
-
-
         </section>
 
         <section class="section" id="top-tracks">
@@ -93,8 +90,8 @@
             <h2>Your Custom Playlist</h2>
             <div class="playlist-container">
                 <div class="playlist-info">
-                    <p>Create a playlist with your top 20 tracks and 30 recommendations.</p>
-                    <p><strong>Playlist Name:</strong> Your Top 20 + 30 Recommendations</p>
+                    <p>Create a playlist with your top 20 tracks in addition with 30 additional recommendations.</p>
+                    <p><strong>Playlist Name:</strong>Your Curated Playlist of the Day</p>
                     <div class="button-container">
                         <button id="create-playlist-btn" class="spotify-button">
                             <span class="button-text">Create Playlist</span>
@@ -145,7 +142,7 @@
                         <li>
                             <span class="feature">{{ feature|capitalize }}</span>
                             <span class="trend {{ 'increasing' if trend > 0 else 'decreasing' }}">
-                                {{ "↗️" if trend > 0 else "↘️" }} {{ "Increasing" if trend > 0 else "Decreasing" }}
+                                {{ trend > 0 ? "↗️ Increasing" : "↘️ Decreasing" }}
                             </span>
                         </li>
                         {% endfor %}

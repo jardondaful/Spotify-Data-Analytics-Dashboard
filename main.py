@@ -27,8 +27,8 @@ cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 # Setup thread pool for async processing
 executor = ThreadPoolExecutor(max_workers=3)
 
-SPOTIPY_CLIENT_ID = '5f07fc9c17594557b51376250950342b'
-SPOTIPY_CLIENT_SECRET = '6bce146d812142c2a9f345c7d476e72f'
+SPOTIPY_CLIENT_ID = ''
+SPOTIPY_CLIENT_SECRET = ''
 SPOTIPY_REDIRECT_URI = 'http://localhost:8000/callback'
 SCOPE = 'user-top-read user-read-recently-played playlist-modify-private'
 
@@ -113,7 +113,7 @@ def create_playlist_route():
 
 def create_playlist(sp, top_track_ids, recommended_track_ids):
     user_id = sp.me()['id']
-    playlist_name = "Your Top 20 + 30 Recommendations"
+    playlist_name = "Your Curated Playlist of the Day"
     
     # Delete existing playlists with the same name
     delete_existing_playlists(sp, playlist_name)
