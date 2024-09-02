@@ -81,7 +81,7 @@ def season_summary():
         future_seasonal_data = executor.submit(analyze_seasonal_data, top_artists, top_tracks, recent_tracks, recommendations, playlist)
         
         # Wait for all computations to complete
-        listening_time_plot, date_range_data = future_listening_habits.result()
+        listening_time_plot, date_range_data, tracks_played_list = future_listening_habits.result()
         listening_trends = future_listening_trends.result()
         analytics = future_seasonal_data.result()
     
@@ -89,6 +89,7 @@ def season_summary():
     analytics['listening_time_plot'] = listening_time_plot
     analytics['listening_trends'] = listening_trends
     analytics['date_range_data'] = date_range_data or []
+    analytics['tracks_played'] = tracks_played_list  # Add this line
     
     return render_template('index.html', analytics=analytics)
 
@@ -209,6 +210,8 @@ def analyze_seasonal_data(top_artists, top_tracks, recent_tracks, recommendation
         'average_popularity': average_popularity,
     }
 
+from collections import Counter
+
 def analyze_listening_habits(recent_tracks):
     timestamps = [track['played_at'] for track in recent_tracks]
     track_names = [track['track']['name'] for track in recent_tracks]
@@ -221,6 +224,16 @@ def analyze_listening_habits(recent_tracks):
     df['hour'] = df['timestamp'].dt.hour
 
     hourly_counts = df.groupby('hour').size().reset_index(name='count')
+
+    # Group by track name and hour, count occurrences
+    track_counts = df.groupby(['hour', 'track']).size().reset_index(name='count')
+
+    grouped_tracks = []
+    for _, row in track_counts.iterrows():
+        grouped_tracks.append({
+            'hour': f"{row['hour']:02d}:00",
+            'track': f"{row['track']} ({row['count']})"
+        })
 
     plt.style.use('dark_background')
     
@@ -250,7 +263,8 @@ def analyze_listening_habits(recent_tracks):
     date_range_data['date'] = date_range_data['date'].astype(str)
     date_range_data = date_range_data.to_dict(orient='records')
     
-    return img_str, date_range_data
+    return img_str, date_range_data, grouped_tracks
+
 
 def analyze_listening_trends(sp, recent_tracks, top_artists):
     top_genres = [genre for artist in top_artists['items'] for genre in artist['genres']]

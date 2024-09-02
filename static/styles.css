@@ -441,3 +441,34 @@ footer {
     padding: 20px;
     margin-top: 20px;
 }
+
+.listening-patterns-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.chart-container {
+    width: 65%; /* Adjust width as needed */
+}
+
+.song-list-container {
+    width: 30%; /* Adjust width as needed */
+    max-height: 400px; /* Set the maximum height */
+    overflow-y: auto; /* Make it scrollable */
+    margin-left: 20px;
+    background-color: #181818; /* Match the background with the theme */
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.song-list {
+    list-style-type: none;
+    padding-left: 0;
+    color: #CCCCCC;
+}
+
+.song-list li {
+    margin-bottom: 10px;
+}

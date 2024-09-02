@@ -34,9 +34,23 @@
 
         <section class="section" id="listening-patterns">
             <h2>Your Listening Patterns</h2>
-            <img src="data:image/png;base64,{{ analytics.listening_time_plot }}" alt="Overall Listening Patterns"
-                style="max-width:100%; height:auto;">
+            <div class="listening-patterns-container">
+                <div class="chart-container">
+                    <img src="data:image/png;base64,{{ analytics.listening_time_plot }}" alt="Overall Listening Patterns" style="max-width:100%; height:auto;">
+                </div>
+                <div class="song-list-container">
+                    <h3>Tracks Played</h3>
+                    <ul class="song-list">
+                        {% for song in analytics.tracks_played %}
+                        <li>{{ song.hour }} - {{ song.track }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
         </section>
+        
+        
+        
 
         <section class="section" id="top-tracks">
             <h2>Your Top Tracks</h2>
@@ -141,13 +155,14 @@
                         {% for feature, trend in analytics.listening_trends.feature_trends.items() %}
                         <li>
                             <span class="feature">{{ feature|capitalize }}</span>
-                            <span class="trend {{ 'increasing' if trend > 0 else 'decreasing' }}">
-                                {{ trend > 0 ? "↗️ Increasing" : "↘️ Decreasing" }}
+                            <span class="trend">
+                                {{ "↗️ Increasing" if trend > 0 else "↘️ Decreasing" }}
                             </span>
                         </li>
                         {% endfor %}
                     </ul>
                 </div>
+                
                 <div class="trend-box">
                     <h3>Personalized Recommendations</h3>
                     <ul class="trend-list recommendations">
